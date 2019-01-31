@@ -1,9 +1,15 @@
-FROM scratch
+FROM golang
 
-ARG binary
+WORKDIR /go/src/github.com/wrouesnel/postgres_exporter
 
-COPY $binary /postgres_exporter
+COPY . .
+
+RUN go get github.com/sirupsen/logrus && go run mage.go binary
+
+FROM debian:stable-slim
+
+COPY --from=0 /go/src/github.com/wrouesnel/postgres_exporter/postgres_exporter /usr/bin
 
 EXPOSE 9187
 
-ENTRYPOINT [ "/postgres_exporter" ]
+CMD [ "/usr/bin/postgres_exporter" ]
